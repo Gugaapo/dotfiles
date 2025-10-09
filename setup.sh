@@ -52,16 +52,48 @@ ln -sf "$ALACRITTY_CONFIG" "$HOME/.config/alacritty/alacritty.toml"
 
 # ------------------------------------------------------
 # update gnome-terminal shortcut for Ctrl+Alt+T
-# -------------------------------------------------------
+# ------------------------------------------------------
 if command -v gsettings &> /dev/null; then
     echo "Updating GNOME shortcut for Ctrl+Alt+T..."
     gsettings set org.gnome.desktop.default-applications.terminal exec 'alacritty'
     gsettings set org.gnome.desktop.default-applications.terminal exec-arg ''
 fi
 
+# ------------------------------------------------------
+# Set KDE Plasma or Gnome workspace shortcuts (Alt+Shift+1-9)
+# -------------------------------------------------------
+echo "Configuring workspace shortcuts..."
+
+if [[ "$XDG_CURRENT_DESKTOP" == *KDE* ]]; then
+    echo "Detected KDE Plasma..."
+    for i in {1..9}; do
+        # Set shortcut to switch to desktop i using Alt+Shift+i
+        kwriteconfig5 --file kglobalshortcutsrc \
+            --group "kwin" \
+            --key "Switch to Desktop $i" "Alt+Shift+$i,,$i"
+    done
+
+    # Reload KWin to apply the shortcuts
+    qdbus org.kde.KWin /KWin reconfigure
+    echo "KDE Plasma workspace shortcuts set: Alt+Shift+1-9"
+
+elif [[ "$XDG_CURRENT_DESKTOP" == *GNOME* ]]; then
+    echo "Detected GNOME..."
+    for i in {1..9}; do
+        # Workspace shortcuts: switch to workspace i
+        gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-$i \
+            "['<Alt><Shift>$i']"
+    done
+    echo "GNOME workspace shortcuts set: Alt+Shift+1-9"
+
+else
+    echo "Unsupported desktop environment for workspace shortcuts: $XDG_CURRENT_DESKTOP"
+fi
+
+
 
 # ------------------------------
-# SET OH-MY-BASH THEME AND LOAD BASHRC
+#SET OH-MY-BASH THEME AND LOAD BASHRC
 # ------------------------------
 sed -i "s/^OSH_THEME=.*/OSH_THEME=\"$OSH_THEME\"/" "$HOME/.bashrc"
 
