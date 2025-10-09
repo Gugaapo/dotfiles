@@ -1,0 +1,99 @@
+# Alacritty Configuration File
+ # See: https://alacritty.org/config-alacritty.html :contentReference[oaicite:4]{index=4}
+ 
+ [general]
+ # Import additional TOML files in order. Missing files are skipped.
+ # Paths can be absolute (/path/to/file), home-relative (~/file), or relative.
+ # Example: import = ["~/.config/alacritty/base.toml", "themes/gruvbox.toml"]
+ # Default: []
+ import = [
+ "~/.config/alacritty/themes/themes/ayu_mirage.toml"
+ ]
+ 
+ # Working directory for the shell. "None" uses parent process directory.
+ # Default: "None" :contentReference[oaicite:5]{index=5}
+ working_directory = "None"
+ 
+ # Enable live config reload without restart.
+ # Default: true :contentReference[oaicite:6]{index=6}
+ live_config_reload = true
+ 
+ # Enable IPC socket on UNIX.
+ # Default: true :contentReference[oaicite:7]{index=7}
+ ipc_socket = true
+ 
+ 
+ [window]
+ # Window padding in pixels (scaled by DPI). Default: { x = 0, y = 0 } :contentReference[oaicite:8]{index=8}
+ padding = { x = 5, y = 0 }
+ 
+ # Window decorations: "Full", "None", "Transparent" (macOS), or "Buttonless" (macOS).
+ # Default: "Full" :contentReference[oaicite:9]{index=9}
+ decorations = "Transparent"
+ 
+ # Background opacity. 0.0 = transparent, 1.0 = opaque. Default: 1.0 :contentReference[oaicite:10]{index=10}
+ opacity = 0.95
+ 
+ # Enable blur behind transparent windows (macOS/KDE Wayland).
+ # Default: false :contentReference[oaicite:11]{index=11}
+ blur = true
+ 
+ # Window startup mode: "Windowed", "Maximized", "Fullscreen", "SimpleFullscreen" (macOS).
+ # Default: "Windowed" :contentReference[oaicite:12]{index=12}
+ startup_mode = "Maximized"
+ 
+ # Allow terminal apps to change the window title. Default: true :contentReference[oaicite:13]{index=13}
+ dynamic_title = true
+ 
+ [scrolling]
+ # Scrollback buffer size (lines). 0 disables scrollback. Default: 10000 :contentReference[oaicite:14]{index=14}
+ history = 10000
+ 
+ # Scroll speed multiplier. Default: 3 :contentReference[oaicite:15]{index=15}
+ multiplier = 3
+ 
+ [font]
+ # Font configuration. Default family on Linux/BSD: "monospace" :contentReference[oaicite:16]{index=16}
+ normal = { family = "monospace", style = "Regular" }
+ bold = { family = "monospace", style = "Bold" }
+ italic = { family = "monospace", style = "Italic" }
+ bold_italic = { family = "monospace", style = "Bold Italic" }
+ 
+ # Font size in points. Default: 11.25 :contentReference[oaicite:17]{index=17}
+ size = 15.0
+ 
+ # Offset around each character. Default: { x = 0, y = 0 } :contentReference[oaicite:18]{index=18}
+ offset = { x = 0, y = 0 }
+ 
+ #[colors.primary]
+ # Primary colors: background & foreground. Default: "#181818"/"#d8d8d8" :contentReference[oaicite:19]{index=19}
+ #background = "#1e1e33"
+ #foreground = "#c5c8c6"
+ 
+ #[colors.normal]
+ # Standard ANSI colors. Default values shown in documentation. :contentReference[oaicite:20]{index=20}
+ #black = "#1e1e1e"
+ #red = "#cc6666"
+ #green = "#b5bd68"
+ #yellow = "#f0c674"
+ #blue = "#81a2be"
+ #magenta = "#b294bb"
+ #cyan = "#8abeb7"
+ #white = "#c5c8c6"
+ 
+ #[colors.bright]
+ # Bright ANSI colors. Default values shown in documentation. :contentReference[oaicite:21]{index=21}
+ #black = "#666666"
+ #red = "#d54e53"
+ #green = "#b9ca4a"
+ #yellow = "#e7c547"
+ #blue = "#7aa6da"
+ #magenta = "#c397d8"
+ #cyan = "#70c0ba"
+ #white = "#eaeaea"
+ 
+ [terminal.shell]
+ # Specify default shell program and arguments (replacing deprecated [shell]).
+ # program: path to shell. args: array of arguments (e.g., ["--login"]).
+ program = "/bin/bash" # Using oh-my-bash :contentReference[oaicite:22]{index=22}
+ args = ["--login"] # Ensures login shell :contentReference[oaicite:23]{index=23}
