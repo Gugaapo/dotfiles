@@ -50,6 +50,16 @@ ln -sf "$DOTFILES_DIR/.dir_history.sh" "$HOME/.dir_history.sh"
 mkdir -p "$HOME/.config/alacritty"
 ln -sf "$ALACRITTY_CONFIG" "$HOME/.config/alacritty/alacritty.toml"
 
+# ------------------------------------------------------
+# update gnome-terminal shortcut for Ctrl+Alt+T
+# -------------------------------------------------------
+if command -v gsettings &> /dev/null; then
+    echo "Updating GNOME shortcut for Ctrl+Alt+T..."
+    gsettings set org.gnome.desktop.default-applications.terminal exec 'alacritty'
+    gsettings set org.gnome.desktop.default-applications.terminal exec-arg ''
+fi
+
+
 # ------------------------------
 # SET OH-MY-BASH THEME AND LOAD BASHRC
 # ------------------------------
