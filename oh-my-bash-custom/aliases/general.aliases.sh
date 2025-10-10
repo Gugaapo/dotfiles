@@ -6,3 +6,13 @@ alias cd.='cd.'
 alias e='exit'
 alias nano='nano -l -T 4'
 
+# Load zoxide
+eval "$(zoxide init bash)"
+# Override cd
+cd() {
+    if [ $# -eq 0 ]; then
+        builtin cd ~
+    else
+        z "$@" || builtin cd "$@"
+    fi
+}
