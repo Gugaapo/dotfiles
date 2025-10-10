@@ -7,19 +7,17 @@ set -e
 DOTFILES_DIR="$HOME/.dotfiles"
 OSH_THEME="binaryanomaly"
 ALACRITTY_CONFIG="$DOTFILES_DIR/.config/alacritty/alacritty.toml"
+WOFI_THEME_DIR="$HOME/.config/wofi"
+WOFI_THEME_FILE="$WOFI_THEME_DIR/theme.rasi"
 
 # ------------------------------
 # INSTALL DEPENDENCIES
 # ------------------------------
 echo "Installing dependencies..."
 sudo apt update
-sudo apt install -y git curl wget build-essential cmake pkg-config libfreetype6-dev libfontconfig1-dev libxcb-xfixes0-dev libxkbcommon-dev python3 python3-pip
-
-# Install Alacritty
-if ! command -v alacritty &> /dev/null; then
-    echo "Installing Alacritty..."
-    sudo apt install -y alacritty
-fi
+sudo apt install -y git curl wget build-essential cmake pkg-config \
+    libfreetype6-dev libfontconfig1-dev libxcb-xfixes0-dev libxkbcommon-dev \
+    python3 python3-pip alacritty wofi
 
 # ------------------------------
 # CLONE DOTFILES
@@ -49,6 +47,71 @@ ln -sf "$DOTFILES_DIR/.bashrc" "$HOME/.bashrc"
 ln -sf "$DOTFILES_DIR/.dir_history.sh" "$HOME/.dir_history.sh"
 mkdir -p "$HOME/.config/alacritty"
 ln -sf "$ALACRITTY_CONFIG" "$HOME/.config/alacritty/alacritty.toml"
+
+# ------------------------------
+# SET UP WOFi THEME
+# ------------------------------
+echo "Setting up Wofi theme..."
+mkdir -p "$WOFI_THEME_DIR"
+
+cat <<'EOF' > "$WOFI_THEME_FILE"
+window {
+    margin: 0px;
+    border: 1px solid #88c0d0;
+    background-color: #2e3440;
+}
+
+#input {
+    margin: 5px;
+    border: none;
+    color: #d8dee9;
+    background-color: #3b4252;
+}
+
+#inner-box {
+    margin: 5px;
+    border: none;
+    background-color: #2e3440;
+}
+
+#outer-box {
+    margin: 5px;
+    border: none;
+    background-color: #2e3440;
+}
+
+#scroll {
+    margin: 0px;
+    border: none;
+}
+
+#text {
+    margin: 5px;
+    border: none;
+    color: #d8dee9;
+}
+
+#entry:selected {
+    background-color: #3b4252;
+}
+EOF
+
+# ------------------------------
+# CONFIGURE WOFi SHORTCUT (Alt+Space)
+# ------------------------------
+if [[ "$XDG_CURRENT_DESKTOP" == *KDE* ]]; then
+    echo "Configuring Alt+Space to launch Wofi on KDE..."
+    kwriteconfig5 --file kglobalshortcutsrc \
+        --group "KWin" \
+        --key "Activate Application Launcher Widget" "Alt+Space,,wofi -show drun -theme $WOFI_THEME_FILE"
+    qdbus org.kde.KWin /KWin reconfigure
+elif [[ "$XDG_CURRENT_DESKTOP" == *GNOME* ]]; then
+    echo "Configuring Alt+Space to launch Wofi on GNOME..."
+    gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/wofi/']"
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/wofi/ name 'Wofi'
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/wofi/ command "wofi -show drun -theme $WOFI_THEME_FILE"
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/wofi/ binding '<Alt>space'
+fi
 
 # ------------------------------------------------------
 # update gnome-terminal shortcut for Ctrl+Alt+T
@@ -90,8 +153,6 @@ else
     echo "Unsupported desktop environment for workspace shortcuts: $XDG_CURRENT_DESKTOP"
 fi
 
-
-
 # ------------------------------
 #SET OH-MY-BASH THEME AND LOAD BASHRC
 # ------------------------------
@@ -100,4 +161,4 @@ sed -i "s/^OSH_THEME=.*/OSH_THEME=\"$OSH_THEME\"/" "$HOME/.bashrc"
 echo "Sourcing .bashrc..."
 source "$HOME/.bashrc"
 
-echo "Setup complete! Your terminal should now be ready with Oh My Bash and Alacritty."
+echo "Setup complete! Your terminal should now be ready with Oh My Bash, Alacritty, and Wofi."
