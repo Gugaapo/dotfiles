@@ -1,197 +1,134 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =====================================
+#   Gugaapo's Linux Environment Setup
+#   Debian 13 (Trixie) - KDE + Wayland
+# =====================================
+
 set -e
 
-# ------------------------------
-# CONFIGURATION
-# ------------------------------
-DOTFILES_DIR="$HOME/.dotfiles"
-OSH_THEME="binaryanomaly"
-ALACRITTY_CONFIG="$DOTFILES_DIR/.config/alacritty/alacritty.toml"
-WOFI_THEME_DIR="$HOME/.config/wofi"
-WOFI_THEME_FILE="$WOFI_THEME_DIR/theme.rasi"
+DOTFILES_DIR="$HOME/dotfiles"
+CONFIG_DIR="$HOME/.config"
+LOG_FILE="/tmp/dotfiles_setup.log"
+INSTALL_REPORT="/tmp/dotfiles_report.txt"
 
-# ------------------------------
-# INSTALL DEPENDENCIES
-# ------------------------------
-echo "Installing dependencies..."
-sudo apt update
-sudo apt install -y git curl wget build-essential cmake pkg-config \
-    libfreetype6-dev libfontconfig1-dev libxcb-xfixes0-dev libxkbcommon-dev \
-    python3 python3-pip alacritty wofi fastfetch
+echo "🚀 Starting setup..."
+echo "" > "$LOG_FILE"
+echo "" > "$INSTALL_REPORT"
 
-# ------------------------------
-# INSTALL VISUAL STUDIO CODE
-# ------------------------------
-if ! command -v code &> /dev/null; then
-    echo "Installing Visual Studio Code..."
-    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-    sudo install -o root -g root -m 644 packages.microsoft.gpg /usr/share/keyrings/
-    sudo sh -c 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] \
-        https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
-    rm -f packages.microsoft.gpg
+# -------------------------------------
+# Helper Functions
+# -------------------------------------
 
-    sudo apt update
-    sudo apt install -y code
+run_step() {
+  local description="$1"
+  shift
+  echo -e "\n🔧 $description..." | tee -a "$LOG_FILE"
+  if "$@" >>"$LOG_FILE" 2>&1; then
+    echo "✅ $description completed." | tee -a "$INSTALL_REPORT"
+  else
+    echo "❌ $description failed. Check $LOG_FILE for details." | tee -a "$INSTALL_REPORT"
+    exit 1
+  fi
+}
+
+log() {
+  echo -e "$1" | tee -a "$LOG_FILE"
+}
+
+# -------------------------------------
+# 1. System Update & Dependencies
+# -------------------------------------
+
+run_step "Updating package list" sudo apt update
+
+run_step "Installing dependencies and base packages" sudo apt install -y \
+  git curl wget build-essential cmake pkg-config \
+  libfreetype6-dev libfontconfig1-dev libxcb-xfixes0-dev libxkbcommon-dev \
+  python3 python3-pip alacritty wofi fastfetch bash-completion fonts-noto-color-emoji
+
+
+
+# -------------------------------------
+# 1.1 Install VS Code
+# -------------------------------------
+run_step "Installing Visual Studio Code" bash -c "
+if ! command -v code >/dev/null 2>&1; then
+  # Add Microsoft GPG key
+  curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg
+  sudo install -o root -g root -m 644 /tmp/microsoft.gpg /usr/share/keyrings/microsoft.gpg
+
+  # Add VS Code repository
+  echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/code stable main' | \
+      sudo tee /etc/apt/sources.list.d/vscode.list
+
+  # Update package lists and install
+  sudo apt update
+  sudo apt install -y code
 else
-    echo "Visual Studio Code already installed."
+  echo '✅  VS Code already installed.' >> $INSTALL_REPORT
 fi
+"
 
 
+# -------------------------------------
+# 2. Oh My Bash Setup
+# -------------------------------------
 
-# ------------------------------
-# CLONE DOTFILES
-# ------------------------------
-if [ ! -d "$DOTFILES_DIR" ]; then
-    echo "Cloning dotfiles..."
-    git clone https://github.com/Gugaapo/dotfiles.git "$DOTFILES_DIR"
-else
-    echo "Dotfiles directory already exists, skipping clone."
-fi
-
-# ------------------------------
-# INSTALL ZOXIDE
-# ------------------------------
-if ! command -v zoxide &> /dev/null; then
-    echo "Installing zoxide..."
-    # Using webinstall.dev script for latest version
-    curl -sS https://webinstall.dev/zoxide | bash
-else
-    echo "zoxide already installed."
-fi
-
-
-
-
-# ------------------------------
-# INSTALL OH-MY-BASH
-# ------------------------------
 if [ ! -d "$HOME/.oh-my-bash" ]; then
-    echo "Installing Oh My Bash..."
+  run_step "Installing Oh My Bash" \
     bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 else
-    echo "Oh My Bash already installed."
+  log "✅   Oh My Bash already installed."
 fi
 
-# ------------------------------
-# SYMLINK CONFIG FILES
-# ------------------------------
-echo "Linking dotfiles..."
-ln -sf "$DOTFILES_DIR/.bashrc" "$HOME/.bashrc"
-ln -sf "$DOTFILES_DIR/.dir_history.sh" "$HOME/.dir_history.sh"
-mkdir -p "$HOME/.config/alacritty"
-ln -sf "$ALACRITTY_CONFIG" "$HOME/.config/alacritty/alacritty.toml"
+# Apply BinaryAnomaly theme
+run_step "Applying Oh My Bash theme" bash -c "
+mkdir -p \"$HOME/.oh-my-bash/themes/binaryanomaly\" &&
+cp -f \"$DOTFILES_DIR/oh-my-bash-custom/themes/binaryanomaly/binaryanomaly.theme.sh\" \
+      \"$HOME/.oh-my-bash/themes/binaryanomaly/binaryanomaly.theme.sh\"
+"
 
-# ------------------------------
-# SET UP WOFi THEME
-# ------------------------------
-echo "Setting up Wofi theme..."
-mkdir -p "$WOFI_THEME_DIR"
+# Copy aliases
+run_step "Copying custom aliases" bash -c "
+mkdir -p \"$HOME/.oh-my-bash/custom\" &&
+cp -f \"$DOTFILES_DIR/oh-my-bash-custom/aliases/general.aliases.sh\" \"$HOME/.oh-my-bash/custom/my_aliases.aliases.sh\"
+"
 
-cat <<'EOF' > "$WOFI_THEME_FILE"
-window {
-    margin: 0px;
-    border: 1px solid #88c0d0;
-    background-color: #2e3440;
-}
+# Add custom past command for directory history
+run_step "Copying dir_history script" bash -c "
+mkdir -p \"$HOME/bin\" &&
+cp -f \"$DOTFILES_DIR/oh-my-bash-custom/scripts/dir_history.sh\" \"$HOME/bin/past\" &&
+chmod +x \"$HOME/bin/past\"
+"
 
-#input {
-    margin: 5px;
-    border: none;
-    color: #d8dee9;
-    background-color: #3b4252;
-}
+# -------------------------------------
+# 3. Bash Configuration
+# -------------------------------------
 
-#inner-box {
-    margin: 5px;
-    border: none;
-    background-color: #2e3440;
-}
+run_step "Copying .bashrc" cp -f "$DOTFILES_DIR/bashrc/.bashrc" "$HOME/.bashrc"
 
-#outer-box {
-    margin: 5px;
-    border: none;
-    background-color: #2e3440;
-}
+# -------------------------------------
+# 4. Alacritty Configuration
+# -------------------------------------
 
-#scroll {
-    margin: 0px;
-    border: none;
-}
+run_step "Copying Alacritty configuration" bash -c "
+mkdir -p \"$CONFIG_DIR/alacritty\" &&
+cp -f \"$DOTFILES_DIR/alacritty/alacritty.toml\" \"$CONFIG_DIR/alacritty/alacritty.toml\"
+"
 
-#text {
-    margin: 5px;
-    border: none;
-    color: #d8dee9;
-}
+# -------------------------------------
+# 5. Final Report
+# -------------------------------------
 
-#entry:selected {
-    background-color: #3b4252;
-}
-EOF
-
-# ------------------------------
-# CONFIGURE WOFi SHORTCUT (Alt+Space)
-# ------------------------------
-if [[ "$XDG_CURRENT_DESKTOP" == *KDE* ]]; then
-    echo "Configuring Alt+Space to launch Wofi on KDE..."
-    kwriteconfig5 --file kglobalshortcutsrc \
-        --group "KWin" \
-        --key "Activate Application Launcher Widget" "Alt+Space,,wofi -show drun -theme $WOFI_THEME_FILE"
-    qdbus org.kde.KWin /KWin reconfigure
-elif [[ "$XDG_CURRENT_DESKTOP" == *GNOME* ]]; then
-    echo "Configuring Alt+Space to launch Wofi on GNOME..."
-    gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/wofi/']"
-    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/wofi/ name 'Wofi'
-    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/wofi/ command "wofi -show drun -theme $WOFI_THEME_FILE"
-    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/wofi/ binding '<Alt>space'
-fi
-
-# ------------------------------------------------------
-# update gnome-terminal shortcut for Ctrl+Alt+T
-# ------------------------------------------------------
-if command -v gsettings &> /dev/null; then
-    echo "Updating GNOME shortcut for Ctrl+Alt+T..."
-    gsettings set org.gnome.desktop.default-applications.terminal exec 'alacritty'
-    gsettings set org.gnome.desktop.default-applications.terminal exec-arg ''
-fi
-
-# ------------------------------------------------------
-# Set KDE Plasma or Gnome workspace shortcuts (Alt+Shift+1-9)
-# -------------------------------------------------------
-echo "Configuring workspace shortcuts..."
-
-if [[ "$XDG_CURRENT_DESKTOP" == *KDE* ]]; then
-    echo "Detected KDE Plasma..."
-    for i in {1..9}; do
-        # Set shortcut to switch to desktop i using Alt+Shift+i
-        kwriteconfig5 --file kglobalshortcutsrc \
-            --group "kwin" \
-            --key "Switch to Desktop $i" "Alt+Shift+$i,,$i"
-    done
-
-    # Reload KWin to apply the shortcuts
-    qdbus org.kde.KWin /KWin reconfigure
-    echo "KDE Plasma workspace shortcuts set: Alt+Shift+1-9"
-
-elif [[ "$XDG_CURRENT_DESKTOP" == *GNOME* ]]; then
-    echo "Detected GNOME..."
-    for i in {1..9}; do
-        # Workspace shortcuts: switch to workspace i
-        gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-$i \
-            "['<Alt><Shift>$i']"
-    done
-    echo "GNOME workspace shortcuts set: Alt+Shift+1-9"
-
-else
-    echo "Unsupported desktop environment for workspace shortcuts: $XDG_CURRENT_DESKTOP"
-fi
-
-# ------------------------------
-#SET OH-MY-BASH THEME AND LOAD BASHRC
-# ------------------------------
-sed -i "s/^OSH_THEME=.*/OSH_THEME=\"$OSH_THEME\"/" "$HOME/.bashrc"
-
-echo "Sourcing .bashrc..."
-source "$HOME/.bashrc"
-
-echo "Setup complete! Your terminal should now be ready with Oh My Bash, Alacritty, and Wofi."
+log ""
+log "✅ Setup complete!"
+log "------------------------------------------"
+log "📋 Install report:"
+cat "$INSTALL_REPORT"
+log "------------------------------------------"
+log "🪶 You can now restart your terminal or run:"
+log "    source ~/.bashrc"
+log ""
+log "🧩 Alacritty, Wofi, and Oh My Bash have been configured."
+log "💾 Logs: $LOG_FILE"
+log "------------------------------------------"

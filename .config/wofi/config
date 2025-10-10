@@ -1,0 +1,6 @@
+drun {
+    show-icons=true
+    icon-theme="breeze-dark"
+    font="FiraCode Nerd Font 12"
+    css-file="$HOME/.config/wofi/wofi-theme.css"
+}
