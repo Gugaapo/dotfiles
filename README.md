@@ -8,9 +8,10 @@ Personal configuration files for Linux environments, including Alacritty, Oh My 
 - **Oh My Bash**: Includes your selected theme, plugins, aliases, and completions.
 - **Directory History Tracking**: Track and quickly navigate previously visited directories using the `past` command.
 - **Favorites Directories**: Add frequently used directories to favorites and access them with `past fav <number>`.
-- **zoxide Integration**: Fast directory jumping using `z` as a replacement for `cd`.
 - **Workspace Shortcuts**: Switch between desktops/workspaces using `Alt+Shift+1-9` (supports both KDE Plasma and GNOME).
 - **Wofi Application Launcher**: Fast application launching with a custom theme, bound to `Alt+Space`.
+- **Zoxide Integration**: Replace `cd` with a smarter, faster directory jumper.
+- **Visual Studio Code**: Automatically installed and configured as your main code editor.
 - **Environment Shortcuts**: Sets Alacritty as the default terminal (Ctrl+Alt+T) in GNOME.
 - **Cross-Desktop Support**: Detects KDE Plasma or GNOME and applies relevant configurations automatically.
 
@@ -19,12 +20,11 @@ Personal configuration files for Linux environments, including Alacritty, Oh My 
 This repository contains a setup script that automatically installs required dependencies and configures your environment. To get started:
 
 1. **Clone the repository**:
-
 ```bash
-git clone https://github.com/Gugaapo/dotfiles.git
-cd dotfiles
-
+   git clone https://github.com/Gugaapo/dotfiles.git
+   cd dotfiles
 ```
+
 2. Make the setup script executable:
 ```bash
 chmod +x setup.sh
@@ -38,6 +38,7 @@ The script will:
 
 - Install Alacritty terminal
 - Install Oh My Bash
+- Install and configure Visual Studio Code
 - Configure Alacritty with your preferred theme
 - Apply Oh My Bash with your selected theme, plugins, aliases, and completions
 - Set up custom scripts, including directory history tracking
