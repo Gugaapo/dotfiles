@@ -55,3 +55,20 @@ key = "Back"
 mods = "Control|Shift"
 chars = "\u0015"    # Ctrl+U (delete entire line in bash)
 
+
+[[keyboard.bindings]]
+key = "Equals"
+mods = "Control"
+action = "IncreaseFontSize"
+
+[[keyboard.bindings]]
+key = "Minus"
+mods = "Control"
+action = "DecreaseFontSize"
+
+[[keyboard.bindings]]
+key = "Key0"
+mods = "Control"
+action = "ResetFontSize"
+
+

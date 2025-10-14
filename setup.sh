@@ -44,7 +44,7 @@ run_step "Updating package list" sudo apt update
 run_step "Installing dependencies and base packages" sudo apt install -y \
   git curl wget build-essential cmake pkg-config \
   libfreetype6-dev libfontconfig1-dev libxcb-xfixes0-dev libxkbcommon-dev \
-  python3 python3-pip alacritty wofi fastfetch bash-completion fonts-noto-color-emoji
+  python3 python3-pip alacritty wofi fastfetch bash-completion fonts-noto-color-emoji zoxide tree
 
 
 
